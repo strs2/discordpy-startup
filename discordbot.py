@@ -276,4 +276,4 @@ async def on_reaction_add(reaction, user):
                 await reaction.message.channel.purge()
 
 
-bot.run(token)
+client.run(token)
