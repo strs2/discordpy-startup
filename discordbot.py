@@ -8,6 +8,9 @@ aori_g = ["おっと、どうやらまだまだ練習が必要のようですね
 
 token = os.environ['DISCORD_BOT_TOKEN']
 
+# 接続に必要なオブジェクトを生成
+client = discord.Client()
+
 # 起動時に動作する処理
 #@client.event
 #async def on_ready():
