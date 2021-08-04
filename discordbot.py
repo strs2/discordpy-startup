@@ -8,6 +8,12 @@ aori_g = ["おっと、どうやらまだまだ練習が必要のようですね
 
 token = os.environ['DISCORD_BOT_TOKEN']
 
+# role id
+role_warn   = 871975827758252042
+role_guard  = 872005759045619732
+role_mute   = 872093509035913216
+role_member = 872474861140840458
+
 # 接続に必要なオブジェクトを生成
 client = discord.Client()
 
@@ -25,21 +31,21 @@ async def warn(message,guild,reason1,reason2):
     if len((member.roles)) >= 2:
         # すでにwarnされていたらkick
         for i in range(len(member.roles)):
-            if member.roles[i].id == 871975827758252042:
+            if member.roles[i].id == role_warn:
                 await member.kick(reason="/warn によるwarn2回目")
                 embed=discord.Embed(title="kick!", color=0xff6666)
                 embed.add_field(name=member.name+" キックされる", value=reason2, inline=False)
                 await message.channel.send(embed=embed)
                 return
             # warnguardの処理
-            elif member.roles[i].id == 872005759045619732:
+            elif member.roles[i].id == role_guard:
                 role = guild.get_role(872005759045619732)
                 await member.remove_roles(role)
                 embed=discord.Embed(title="warnguard!", color=0xff66ff)
                 embed.add_field(name=member.name+" が警告ガード！", value="warnが無効化されました！しかし、 "+member.name+" のwarnguardは壊れてしまいました・・・", inline=False)
                 await message.channel.send(embed=embed)
                 return
-    role = guild.get_role(871975827758252042)
+    role = guild.get_role(role_warn)
     await member.add_roles(role)
     embed=discord.Embed(title="warn!", color=0xffff66)
     embed.add_field(name=member.name+" へ警告", value=reason1, inline=False)
@@ -72,8 +78,10 @@ async def on_message(message):
     # メッセージ送信者がBotだった場合は無視する
     if message.author.bot:
         return
+    if message.
+    # ミュート者が発言すると発言が消去される
     for i in range(len(message.author.roles)):
-        if (message.author.roles)[i].id == 872093509035913216:
+        if (message.author.roles)[i].id == role_mute:
             await message.delete()
     # 「/help」と発言したらコマンド一覧が出る処理
     if message.content == '/help':
@@ -82,8 +90,8 @@ async def on_message(message):
         embed.add_field(name="/strs2", value="Strs2", inline=False)
         embed.add_field(name="/dice [数字] [振る回数(省略可)]", value="サイコロを指定された条件下で振ります。", inline=False)
         embed.add_field(name="/search @[名前]", value="メンションした人の情報を取得し表示します。", inline=False)
-        embed.add_field(name="/kickme", value="自分をキックします。権限者のみ使用不可", inline=False)
-        embed.add_field(name="/banme", value="自分をBANします。権限者のみ使用不可", inline=False)
+        embed.add_field(name="/kickme", value="自分をキックします。確認は取りません。権限者のみ使用不可", inline=False)
+        embed.add_field(name="/banme", value="自分をBANします。確認は取りません。権限者のみ使用不可", inline=False)
         embed.add_field(name="/kick @[名前]", value="メンションした人をキックします。権限者のみ使用可能", inline=False)
         embed.add_field(name="/ban @[名前]", value="メンションした人をBANします。権限者のみ使用可能", inline=False)
         embed.add_field(name="/warn @[名前]", value="メンションした人をwarnします。権限者のみ使用可能", inline=False)
