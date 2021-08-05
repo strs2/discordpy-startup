@@ -48,7 +48,6 @@ async def grant_role(payload,role_id):
     guild = user.guild
     role = guild.get_role(role_id)
     await user.add_roles(role)
-    await client.get_channel(payload.channel_id).send(payload.member.name + 'さんにロールを付与しました。')
     return user
 # ロール剥奪
 async def revoke_role(payload,role_id):
@@ -56,7 +55,6 @@ async def revoke_role(payload,role_id):
     guild = user.guild
     role = guild.get_role(role_id)
     await user.remove_roles(role)
-    await client.get_channel(payload.channel_id).send(payload.member.name + 'さんからロールを剥奪しました。')
     return user
 # ロール付け外し
 async def grantrevoke_role(payload,role_id):
@@ -66,10 +64,8 @@ async def grantrevoke_role(payload,role_id):
     for i in range(len(user.roles)):
         if user.roles[i].id == role_id:
             await user.remove_roles(role)
-            await client.get_channel(payload.channel_id).send(payload.member.name + 'さんからロールを剥奪しました。リアクションを付けなおすことで付与させます。')
             return user
     await user.add_roles(role)
-    await client.get_channel(payload.channel_id).send(payload.member.name + 'さんにロールを付与しました。リアクションを付けなおすことで剥奪させます。')
     return user
 
 async def swarn(member,message,guild,reason1,reason2):
@@ -131,7 +127,7 @@ async def on_message(message):
     if message.author.id == 302050872383242240:
         if re.match('.*表示順をアップしたよ.*',message.embeds[0].description):
             await asyncio.wait(7200)
-            client.get_channel(872499582821605408).send('Bump可能！')
+            await client.get_channel(872499582821605408).send('Bump可能！')
     # ミュート者が発言すると発言が消去される
     for i in range(len(message.author.roles)):
         if (message.author.roles)[i].id == role_mute:
@@ -330,64 +326,33 @@ async def on_reaction_add(reaction, user):
 async def on_raw_reaction_add(payload):
     if (payload.emoji.name == '🧾') and (payload.channel_id == 872474676956393492):
         member = await grant_role(payload,role_member)
-        await asyncio.sleep(1)
-        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
     elif (payload.emoji.name == '🔞') and (payload.channel_id == 872729456341549076):
         member = await grantrevoke_role(payload,role_r18)
-        await asyncio.sleep(1)
-        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
     elif (payload.emoji.name == '🇦') and (payload.channel_id == 872752630248652801):
         member = await grantrevoke_role(payload,role_java)
-        await asyncio.sleep(1)
-        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
     elif (payload.emoji.name == '🇧') and (payload.channel_id == 872752630248652801):
         member = await grantrevoke_role(payload,role_bedrock)
-        await asyncio.sleep(1)
-        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
     elif (payload.emoji.name == '🇦') and (payload.channel_id == 872752630248652801):
         member = await grantrevoke_role(payload,role_java)
-        await asyncio.sleep(1)
-        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
     elif (payload.emoji.name == '🇧') and (payload.channel_id == 872752630248652801):
         member = await grantrevoke_role(payload,role_bedrock)
-        await asyncio.sleep(1)
-        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
     elif (payload.emoji.name == '🇨') and (payload.channel_id == 872760382610092103):
         member = await grantrevoke_role(payload,role_jed)
-        await asyncio.sleep(1)
-        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
     elif (payload.emoji.name == '🇩') and (payload.channel_id == 872760382610092103):
         member = await grantrevoke_role(payload,role_jem)
-        await asyncio.sleep(1)
-        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
     elif (payload.emoji.name == '🇪') and (payload.channel_id == 872760382610092103):
         member = await grantrevoke_role(payload,role_jec)
-        await asyncio.sleep(1)
-        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
     elif (payload.emoji.name == '🇫') and (payload.channel_id == 872760382610092103):
         member = await grantrevoke_role(payload,role_bea)
-        await asyncio.sleep(1)
-        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
     elif (payload.emoji.name == '🇬') and (payload.channel_id == 872760382610092103):
         member = await grantrevoke_role(payload,role_bem)
-        await asyncio.sleep(1)
-        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
     elif (payload.emoji.name == '🇭') and (payload.channel_id == 872760382610092103):
         member = await grantrevoke_role(payload,role_bec)
-        await asyncio.sleep(1)
-        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
     elif (payload.emoji.name == '🇨') and (payload.channel_id == 872760382610092103):
         member = await grantrevoke_role(payload,role_advent)
-        await asyncio.sleep(1)
-        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
     elif (payload.emoji.name == '🇩') and (payload.channel_id == 872760382610092103):
         member = await grantrevoke_role(payload,role_specta)
-        await asyncio.sleep(1)
-        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
     elif (payload.emoji.name == '🇪') and (payload.channel_id == 872760382610092103):
         member = await grantrevoke_role(payload,role_hardco)
-        await asyncio.sleep(1)
-        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
-
 
 client.run(token)
