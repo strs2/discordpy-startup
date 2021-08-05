@@ -2,73 +2,117 @@ import discord
 import random
 import os
 import traceback
-
-# 煽りメッセージ
-aori_g = ["おっと、どうやらまだまだ練習が必要のようですね。","打ち間違えでしょうか、聞き間違えでしょうか。","すみません、今すごく笑ってますよ。なぜなら、あなたはこのコマンドを理解していないから。","えっと、それよりも先に誰かに/helpでも実行してもらうというのはいかがでしょうか。","もしかして、サーバーを間違えたのかな？","単純にしたつもりですが・・・。","実は私には特定のメッセージを消す権限があるのです。だから、本当はあなたのコマンドミスをなかったことにしたいけれど・・・。"]
+import asyncio
+import time
 
 token = os.environ['DISCORD_BOT_TOKEN']
 
+# 煽りメッセージ（構文ミス）
+aori_g = ['おっと、どうやらまだまだ練習が必要のようですね。','打ち間違えでしょうか、聞き間違えでしょうか。','すみません、今すごく笑ってますよ。なぜなら、あなたはこのコマンドを理解していないから。','えっと、それよりも先に誰かに/helpでも実行してもらうというのはいかがでしょうか。','もしかして、サーバーを間違えたのかな？','単純にしたつもりですが・・・。','実は私には特定のメッセージを消す権限があるのです。だから、本当はあなたのコマンドミスをなかったことにしたいけれど・・・。']
+# 煽りメッセージ（権限無し）
+perm_g = ['権限が必要です。いけますか？','権限を手に入れてから実行しましょう。','気持ちはわかりますが、実行できません。誰かに頼んでもらいましょう。']
+
+# 自分のBotのアクセストークンに置き換えてください
+TOKEN = 'ODcxNzU3NjE1NzIwNDM5ODA4.YQf9jA.QOX6devGtfHWI-gYC2CvPoF69BQ'
+
 # role id
-role_warn   = 871975827758252042
-role_guard  = 872005759045619732
-role_mute   = 872093509035913216
-role_member = 872474861140840458
+role_warn    = 871975827758252042
+role_guard   = 872005759045619732
+role_mute    = 872093509035913216
+role_member  = 872474861140840458
+role_r18     = 872741322560262144
+role_java    = 872755103021551636
+role_bedrock = 872755561857441842
+role_surviv  = 872794206358372353
+role_creati  = 872794314453950464
+role_advent  = 872794408435728404
+role_specta  = 872794483983519774
+role_hardco  = 872794693732282409
 
 # 接続に必要なオブジェクトを生成
 client = discord.Client()
 
 # 起動時に動作する処理
-#@client.event
-#async def on_ready():
-#    # 起動したらターミナルにログイン通知が表示される
-#    print('ログインしました')
+@client.event
+async def on_ready():
+    # 起動したらターミナルにログイン通知が表示される
+    print('起動！')
 
-async def warn(message,guild,reason1,reason2):
+# ロール付与
+async def grant_role(payload,role_id):
+    user = payload.member
+    guild = user.guild
+    role = guild.get_role(role_id)
+    await user.add_roles(role)
+    await client.get_channel(payload.channel_id).send(payload.member.name + 'さんにロールを付与しました。')
+    return user
+# ロール剥奪
+async def revoke_role(payload,role_id):
+    user = payload.member
+    guild = user.guild
+    role = guild.get_role(role_id)
+    await user.remove_roles(role)
+    await client.get_channel(payload.channel_id).send(payload.member.name + 'さんからロールを剥奪しました。')
+    return user
+# ロール付け外し
+async def grantrevoke_role(payload,role_id):
+    user = payload.member
+    guild = user.guild
+    role = guild.get_role(role_id)
+    for i in range(len(user.roles)):
+        if user.roles[i].id == role_id:
+            await user.remove_roles(role)
+            await client.get_channel(payload.channel_id).send(payload.member.name + 'さんからロールを剥奪しました。リアクションを付けなおすことで付与させます。')
+            return user
+    await user.add_roles(role)
+    await client.get_channel(payload.channel_id).send(payload.member.name + 'さんにロールを付与しました。リアクションを付けなおすことで剥奪させます。')
+    return user
+
+async def swarn(member,message,guild,reason1,reason2):
     if (message.author.guild_permissions.administrator) == False:
-        await message.channel.send('権限を持ってから実行しましょう。')
+        await message.channel.send(perm_g)
         return
-    member = message.mentions[0]
     if len((member.roles)) >= 2:
         # すでにwarnされていたらkick
         for i in range(len(member.roles)):
             if member.roles[i].id == role_warn:
-                await member.kick(reason="/warn によるwarn2回目")
-                embed=discord.Embed(title="kick!", color=0xff6666)
-                embed.add_field(name=member.name+" キックされる", value=reason2, inline=False)
+                await member.kick(reason=reason2)
+                embed=discord.Embed(title='kick!', color=0xff6666)
+                embed.add_field(name=member.name+' キックされる', value=reason1, inline=False)
                 await message.channel.send(embed=embed)
                 return
             # warnguardの処理
             elif member.roles[i].id == role_guard:
                 role = guild.get_role(872005759045619732)
                 await member.remove_roles(role)
-                embed=discord.Embed(title="warnguard!", color=0xff66ff)
-                embed.add_field(name=member.name+" が警告ガード！", value="warnが無効化されました！しかし、 "+member.name+" のwarnguardは壊れてしまいました・・・", inline=False)
+                embed=discord.Embed(title='warnguard!', color=0xff66ff)
+                embed.add_field(name=member.name+' が警告ガード！', value='warnが無効化されました！しかし、 '+member.name+' のwarnguardは壊れてしまいました・・・', inline=False)
                 await message.channel.send(embed=embed)
                 return
     role = guild.get_role(role_warn)
     await member.add_roles(role)
-    embed=discord.Embed(title="warn!", color=0xffff66)
-    embed.add_field(name=member.name+" へ警告", value=reason1, inline=False)
+    embed=discord.Embed(title='warn!', color=0xffff66)
+    embed.add_field(name=member.name+' へ警告', value=reason1, inline=False)
     await message.channel.send(embed=embed)
 
 async def skick(message,guild,reason1,reason2):
     if (message.author.guild_permissions.administrator) == False:
-        await message.channel.send('権限を持ってから実行しましょう。')
+        await message.channel.send(perm_g)
         return
     member = message.mentions[0]
     await member.kick(reason=reason2)
-    embed=discord.Embed(title="kick!", color=0xff6666)
-    embed.add_field(name=member.name+" キックされる", value=reason1, inline=False)
+    embed=discord.Embed(title='kick!', color=0xff6666)
+    embed.add_field(name=member.name+' キックされる', value=reason1, inline=False)
     await message.channel.send(embed=embed)
 
 async def sban(message,guild,reason1,reason2):
     if (message.author.guild_permissions.administrator) == False:
-        await message.channel.send('権限を持ってから実行しましょう。')
+        await message.channel.send(perm_g)
         return
     member = message.mentions[0]
     await member.ban(reason=reason2)
-    embed=discord.Embed(title="BAN!", color=0xff0000)
-    embed.add_field(name=member.name+" 参加禁止処分受ける", value=reason1, inline=False)
+    embed=discord.Embed(title='BAN!', color=0xff0000)
+    embed.add_field(name=member.name+' 参加禁止処分受ける', value=reason1, inline=False)
     await message.channel.send(embed=embed)
 
 
@@ -78,33 +122,35 @@ async def on_message(message):
     # メッセージ送信者がBotだった場合は無視する
     if message.author.bot:
         return
-    if message.
+    if ((message.author.guild_permissions.administrator) == False) and (message.channel.id != 872499671292076082):
+            return
     # ミュート者が発言すると発言が消去される
     for i in range(len(message.author.roles)):
         if (message.author.roles)[i].id == role_mute:
             await message.delete()
     # 「/help」と発言したらコマンド一覧が出る処理
     if message.content == '/help':
-        embed=discord.Embed(title="コマンド一覧", color=0x2266ff)
-        embed.add_field(name="/help", value="コマンド一覧を表示するほか、それぞれの説明、構文を表示します。", inline=False)
-        embed.add_field(name="/strs2", value="Strs2", inline=False)
-        embed.add_field(name="/dice [数字] [振る回数(省略可)]", value="サイコロを指定された条件下で振ります。", inline=False)
-        embed.add_field(name="/search @[名前]", value="メンションした人の情報を取得し表示します。", inline=False)
-        embed.add_field(name="/kickme", value="自分をキックします。確認は取りません。権限者のみ使用不可", inline=False)
-        embed.add_field(name="/banme", value="自分をBANします。確認は取りません。権限者のみ使用不可", inline=False)
-        embed.add_field(name="/kick @[名前]", value="メンションした人をキックします。権限者のみ使用可能", inline=False)
-        embed.add_field(name="/ban @[名前]", value="メンションした人をBANします。権限者のみ使用可能", inline=False)
-        embed.add_field(name="/warn @[名前]", value="メンションした人をwarnします。権限者のみ使用可能", inline=False)
-        embed.add_field(name="/unwarn @[名前]", value="メンションした人のwarnを取り消します。権限者のみ使用可能", inline=False)
-        embed.add_field(name="/guard @[名前]", value="メンションした人にwarnguardを付与します。権限者のみ使用可能", inline=False)
-        embed.add_field(name="/mute @[名前]", value="メンションした人をミュートします。権限者のみ使用可能", inline=False)
-        embed.add_field(name="/unmute @[名前]", value="メンションした人のミュートを解除します。権限者のみ使用可能", inline=False)
-        embed.add_field(name="/clear", value="チャンネル内のすべてのログを消去します。権限者のみ使用可能", inline=False)
+        embed=discord.Embed(title='コマンド一覧', color=0x2266ff)
+        embed.add_field(name='/help', value='コマンド一覧を表示するほか、それぞれの説明、構文を表示します。', inline=False)
+        embed.add_field(name='/strs2', value='Strs2', inline=False)
+        embed.add_field(name='/dice [数字] [振る回数(省略可)]', value='サイコロを指定された条件下で振ります。', inline=False)
+        embed.add_field(name='/search @[名前]', value='メンションした人の情報を取得し表示します。', inline=False)
+        embed.add_field(name='/kickme', value='自分をキックします。確認は取りません。権限者のみ使用不可', inline=False)
+        embed.add_field(name='/banme', value='自分をBANします。確認は取りません。権限者のみ使用不可', inline=False)
+        embed.add_field(name='/kick @[名前]', value='メンションした人をキックします。権限者のみ使用可能', inline=False)
+        embed.add_field(name='/ban @[名前]', value='メンションした人をBANします。権限者のみ使用可能', inline=False)
+        embed.add_field(name='/warn @[名前]', value='メンションした人をwarnします。権限者のみ使用可能', inline=False)
+        embed.add_field(name='/unwarn @[名前]', value='メンションした人のwarnを取り消します。権限者のみ使用可能', inline=False)
+        embed.add_field(name='/guard @[名前]', value='メンションした人にwarnguardを付与します。権限者のみ使用可能', inline=False)
+        embed.add_field(name='/mute @[名前]', value='メンションした人をミュートします。権限者のみ使用可能', inline=False)
+        embed.add_field(name='/unmute @[名前]', value='メンションした人のミュートを解除します。権限者のみ使用可能', inline=False)
+        embed.add_field(name='/say [内容]', value='私に設定した内容を言わせます。権限者のみ使用可能', inline=False)
+        embed.add_field(name='/clear', value='チャンネル内のすべてのログを消去します。権限者のみ使用可能', inline=False)
         await message.channel.send(embed=embed)
     # 「/strs2」と発言したら「strs2」が返る処理
     if message.content == '/strs2':
-        embed=discord.Embed(title="Strs2", color=0xff0000)
-        embed.add_field(name="Strs2", value="Strs2", inline=False)
+        embed=discord.Embed(title='Strs2', color=0xff0000)
+        embed.add_field(name='Strs2', value='Strs2', inline=False)
         await message.channel.send(embed=embed)
     # 「/dice [数字]」と発言したら「[1から数字]」が返る処理
     if message.content.startswith('/dice'):
@@ -124,9 +170,9 @@ async def on_message(message):
             await message.channel.send('権限者は実行できません。')
             return
         member = message.author
-        await member.kick(reason="/kickme によるkick")
-        embed=discord.Embed(title="kick!", color=0xff6666)
-        embed.add_field(name=member.name+" キックされる", value="/kickme によってkickされました。", inline=False)
+        await member.kick(reason='/kickme によるkick')
+        embed=discord.Embed(title='kick!', color=0xff6666)
+        embed.add_field(name=member.name+' キックされる', value='/kickme によってkickされました。', inline=False)
         await message.channel.send(embed=embed)
     # 管理者以外が「/banme」と発言したらキックされる処理
     if message.content == '/banme':
@@ -134,9 +180,9 @@ async def on_message(message):
             await message.channel.send('権限者は実行できません。')
             return
         member = message.author
-        await member.ban(reason="/banme によるban")
-        embed=discord.Embed(title="ban!", color=0xff0000)
-        embed.add_field(name=member.name+" 参加禁止処分受ける", value="/banme によってbanされました。", inline=False)
+        await member.ban(reason='/banme によるban')
+        embed=discord.Embed(title='ban!', color=0xff0000)
+        embed.add_field(name=member.name+' 参加禁止処分受ける', value='/banme によってbanされました。', inline=False)
         await message.channel.send(embed=embed)
     # 管理者が「/kick @[キックしたい人]」と発言したらそいつがキックされる処理
     if message.content.startswith('/kick'):
@@ -156,25 +202,25 @@ async def on_message(message):
             await message.channel.send(random.choice(aori_g)+'/guard の構文は```/guard @[warnguardを付与したい人]```です。')
             return
         if (message.author.guild_permissions.administrator) == False:
-            await message.channel.send('権限を持ってから実行しましょう。')
+            await message.channel.send(perm_g)
             return
         member = message.mentions[0]
         guild = message.guild
         role = guild.get_role(872005759045619732)
         await member.add_roles(role)
-        embed=discord.Embed(title="warnguard", color=0x666666)
-        embed.add_field(name=member.name+" へ警告ガード付与！", value="権限者が /warnguard してくれました。1回だけwarnを無効化できます！", inline=False)
+        embed=discord.Embed(title='warnguard', color=0x666666)
+        embed.add_field(name=member.name+' へ警告ガード付与！', value='権限者が /warnguard してくれました。1回だけwarnを無効化できます！', inline=False)
         await message.channel.send(embed=embed)
     # 管理者が「/warn @[warnしたい人]」と発言したらwarnされる処理
     if message.content.startswith('/warn'):
         if len(message.content.split()) == 1:
             await message.channel.send(random.choice(aori_g)+'/warn の構文は```/warn @[warnしたい人]```です。')
             return
-        await warn(message,message.guild,'権限者に /warn されました。2回warnされるとkickされます。','権限者に /warn され、warn回数が2回に到達しました。')
+        await swarn(message.mentions[0],message,message.guild,'権限者に /warn されました。2回warnされるとkickされます。','権限者に /warn され、warn回数が2回に到達しました。')
     # 管理者が「/mute @[黙らせたい人]」と発言したらそいつがmuteされる処理
     if message.content.startswith('/mute'):
         if (message.author.guild_permissions.administrator) == False:
-            await message.channel.send('権限を持ってから実行しましょう。')
+            await message.channel.send(perm_g)
             return
         if len(message.content.split()) == 1:
             await message.channel.send(random.choice(aori_g)+'/mute の構文は```/mute @[黙らせたい人]```です。')
@@ -183,13 +229,13 @@ async def on_message(message):
         guild = message.guild
         role = guild.get_role(872093509035913216)
         await member.add_roles(role)
-        embed=discord.Embed(title="mute!", color=0xaa3333)
-        embed.add_field(name=member.name+" ミュート処分", value="権限者に /mute されてしまいました。発言が不可能になります。", inline=False)
+        embed=discord.Embed(title='mute!', color=0xaa3333)
+        embed.add_field(name=member.name+' ミュート処分', value='権限者に /mute されてしまいました。発言が不可能になります。', inline=False)
         await message.channel.send(embed=embed)
     # 管理者が「/unmute @[unmuteしたい人]」と発言したらそいつがunmuteされる処理
     if message.content.startswith('/unmute'):
         if (message.author.guild_permissions.administrator) == False:
-            await message.channel.send('権限を持ってから実行しましょう。')
+            await message.channel.send(perm_g)
             return
         if len(message.content.split()) == 1:
             await message.channel.send(random.choice(aori_g)+'/unmute の構文は```/unmute @[黙らせたい人]```です。')
@@ -198,13 +244,13 @@ async def on_message(message):
         guild = message.guild
         role = guild.get_role(872093509035913216)
         await member.remove_roles(role)
-        embed=discord.Embed(title="unmute!", color=0x3333aa)
-        embed.add_field(name=member.name+" ミュート解除", value="権限者が /unmute してくれました。発言が可能になります。", inline=False)
+        embed=discord.Embed(title='unmute!', color=0x3333aa)
+        embed.add_field(name=member.name+' ミュート解除', value='権限者が /unmute してくれました。発言が可能になります。', inline=False)
         await message.channel.send(embed=embed)
     # 管理者が「/unwarn @[warnしたい人]」と発言したらwarnが取り消される処理
     if message.content.startswith('/unwarn'):
         if (message.author.guild_permissions.administrator) == False:
-            await message.channel.send('権限を持ってから実行しましょう。')
+            await message.channel.send(perm_g)
             return
         if len(message.content.split()) == 1:
             await message.channel.send(random.choice(aori_g)+'/unwarn の構文は```/unwarn @[unwarnしたい人]```です。')
@@ -218,8 +264,8 @@ async def on_message(message):
             guild = message.guild
             role = guild.get_role(871975827758252042)
             await member.remove_roles(role)
-            embed=discord.Embed(title="unwarn!", color=0x6666ff)
-            embed.add_field(name=member.name+" の警告取り消し", value="権限者が /unwarn してくれました。warn履歴を0回へリセットしました。", inline=False)
+            embed=discord.Embed(title='unwarn!', color=0x6666ff)
+            embed.add_field(name=member.name+' の警告取り消し', value='権限者が /unwarn してくれました。warn履歴を0回へリセットしました。', inline=False)
             await message.channel.send(embed=embed)
     # 「/search @[調べたい人]」と発言したらその人の情報を取得、表示する処理
     if message.content.startswith('/search'):
@@ -227,56 +273,42 @@ async def on_message(message):
             await message.channel.send(random.choice(aori_g)+'/search の構文は```/search @[調べたい人]```です。')
             return
         if message.mention_everyone == True:
-            embed=discord.Embed(title="search 結果", color=0xff6666)
-            embed.add_field(name="みんな", value="みんなについて話すことはできません。一人だけを指定してください。", inline=False)
+            embed=discord.Embed(title='search 結果', color=0xff6666)
+            embed.add_field(name='みんな', value='みんなについて話すことはできません。一人だけを指定してください。', inline=False)
             await message.channel.send(embed=embed)
             return
         elif len(message.mentions) == 0:
-            embed=discord.Embed(title="search 結果", color=0xff6666)
-            embed.add_field(name="エラー", value="プレイヤーメンションで、一人だけを指定してください。", inline=False)
+            embed=discord.Embed(title='search 結果', color=0xff6666)
+            embed.add_field(name='エラー', value='プレイヤーメンションで、一人だけを指定してください。', inline=False)
             await message.channel.send(embed=embed)
             return
         member = message.mentions[0]
-        embed=discord.Embed(title="search 結果", color=0x666666)
+        embed=discord.Embed(title='search 結果', color=0x666666)
         embed.set_thumbnail(url=member.avatar_url)
-        embed.add_field(name=member.name, value="この人について、話していきます。", inline=False)
-        embed.add_field(name="いつからこのアカウントがあるか", value=member.created_at, inline=False)
-        embed.add_field(name="いつからこのサーバーにいるか", value=member.joined_at, inline=False)
-        embed.add_field(name="名前", value=member.name, inline=True)
-        embed.add_field(name="ニックネーム", value=member.nick if (member.nick != None) else '無し', inline=True)
-        embed.add_field(name="権限者であるか", value='YES' if (member.guild_permissions.administrator) else 'NO', inline=False)
+        embed.add_field(name=member.name, value='この人について、話していきます。', inline=False)
+        embed.add_field(name='いつからこのアカウントがあるか', value=member.created_at, inline=False)
+        embed.add_field(name='いつからこのサーバーにいるか', value=member.joined_at, inline=False)
+        embed.add_field(name='名前', value=member.name, inline=True)
+        embed.add_field(name='ニックネーム', value=member.nick if (member.nick != None) else '無し', inline=True)
+        embed.add_field(name='権限者であるか', value='YES' if (member.guild_permissions.administrator) else 'NO', inline=False)
         await message.channel.send(embed=embed)
+    # 「/say [名前]」と発言したらbotがその内容を発言する処理
+    if message.content.startswith('/say'):
+        if (message.author.guild_permissions.administrator) == False:
+            await message.channel.send(perm_g)
+            return
+        if len(message.content.split()) == 1:
+            await message.channel.send(random.choice(aori_g)+'/say の構文は```/say [内容]```です。')
+            return
+        await message.channel.send(message.content.split(' ',1)[1])
     # 「/clear」と発言したらチャンネル内のログを消去する処理
     if message.content == '/clear':
         if message.author.guild_permissions.administrator:
             await message.channel.send('本当にチャンネル内のログを消去しますか？消去する場合は、この文にリアクションをつけてください。')
     # 管理者以外が「@everyone」と発言したらwarnされる処理
     if message.content.startswith('@everyone'):
-        member = message.author
-        guild = message.guild
-        if len((member.roles)) >= 2:
-            # すでにwarnされていたらkick
-            for i in range(len(member.roles)):
-                if member.roles[i].id == 871975827758252042:
-                    await member.kick(reason="/warn によるwarn2回目")
-                    embed=discord.Embed(title="kick!", color=0xff6666)
-                    embed.add_field(name=member.name+" キックされる", value='権限者以外の everyone メンションによりwarn回数が2回に到達しました。', inline=False)
-                    await message.channel.send(embed=embed)
-                    return
-                # warnguardの処理
-                elif member.roles[i].id == 872005759045619732:
-                    role = guild.get_role(872005759045619732)
-                    await member.remove_roles(role)
-                    embed=discord.Embed(title="warnguard!", color=0xff66ff)
-                    embed.add_field(name=member.name+" が警告ガード！", value="warnが無効化されました！しかし、 "+member.name+" のwarnguardは壊れてしまいました・・・", inline=False)
-                    await message.channel.send(embed=embed)
-                    return
-        role = guild.get_role(871975827758252042)
-        await member.add_roles(role)
-        embed=discord.Embed(title="warn!", color=0xffff66)
-        embed.add_field(name=member.name+" へ警告", value='権限者以外の everyone メンションは禁止されています。2回warnされるとkickされます。', inline=False)
-        await message.channel.send(embed=embed)
-# await member.kick(reason="管理者以外の @everyone")
+        await swarn(member.author,message,message.guild,'権限者以外の everyone メンションは禁止されています。2回warnされるとkickされます。','権限者以外のeveryone メンションによりwarnされ、warn回数が2回に到達しました。')
+# await member.kick(reason='管理者以外の @everyone')
 
 @client.event
 async def on_reaction_add(reaction, user):
@@ -285,6 +317,45 @@ async def on_reaction_add(reaction, user):
             if user.guild_permissions.administrator:
                 await reaction.message.channel.send('それでは、消去を開始します。')
                 await reaction.message.channel.purge()
+
+@client.event
+async def on_raw_reaction_add(payload):
+    if (payload.emoji.name == '🧾') and (payload.channel_id == 872474676956393492):
+        member = await grant_role(payload,role_member)
+        await asyncio.sleep(1)
+        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
+    elif (payload.emoji.name == '🔞') and (payload.channel_id == 872729456341549076):
+        member = await grantrevoke_role(payload,role_r18)
+        await asyncio.sleep(1)
+        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
+    elif (payload.emoji.name == '🇦') and (payload.channel_id == 872752630248652801):
+        member = await grantrevoke_role(payload,role_java)
+        await asyncio.sleep(1)
+        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
+    elif (payload.emoji.name == '🇧') and (payload.channel_id == 872752630248652801):
+        member = await grantrevoke_role(payload,role_bedrock)
+        await asyncio.sleep(1)
+        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
+    elif (payload.emoji.name == '🇦') and (payload.channel_id == 872760382610092103):
+        member = await grantrevoke_role(payload,role_surviv)
+        await asyncio.sleep(1)
+        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
+    elif (payload.emoji.name == '🇧') and (payload.channel_id == 872760382610092103):
+        member = await grantrevoke_role(payload,role_creati)
+        await asyncio.sleep(1)
+        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
+    elif (payload.emoji.name == '🇨') and (payload.channel_id == 872760382610092103):
+        member = await grantrevoke_role(payload,role_advent)
+        await asyncio.sleep(1)
+        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
+    elif (payload.emoji.name == '🇩') and (payload.channel_id == 872760382610092103):
+        member = await grantrevoke_role(payload,role_specta)
+        await asyncio.sleep(1)
+        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
+    elif (payload.emoji.name == '🇪') and (payload.channel_id == 872760382610092103):
+        member = await grantrevoke_role(payload,role_hardco)
+        await asyncio.sleep(1)
+        await client.get_channel(payload.channel_id).delete_messages([client.get_channel(payload.channel_id).last_message])
 
 
 client.run(token)
