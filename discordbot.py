@@ -4,6 +4,7 @@ import os
 import traceback
 import asyncio
 import time
+import re
 
 token = os.environ['DISCORD_BOT_TOKEN']
 
@@ -120,7 +121,11 @@ async def on_message(message):
     if message.author.bot:
         return
     if ((message.author.guild_permissions.administrator) == False) and (message.channel.id != 872499671292076082):
-            return
+        return
+    if message.author.id == 302050872383242240:
+        if re.match('.*表示順をアップしたよ.*',message.embeds[0].description):
+            await asyncio.wait(7200)
+            client.get_channel(872499582821605408).send('Bump可能！')
     # ミュート者が発言すると発言が消去される
     for i in range(len(message.author.roles)):
         if (message.author.roles)[i].id == role_mute:
