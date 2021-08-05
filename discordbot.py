@@ -5,6 +5,7 @@ import traceback
 import asyncio
 import time
 import re
+import sqlite3
 
 token = os.environ['DISCORD_BOT_TOKEN']
 
