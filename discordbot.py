@@ -33,6 +33,13 @@ role_jec     = 872850822818582539
 role_bea     = 872850938782707797
 role_bem     = 872851207918592050
 role_bec     = 872851328546779226
+role_kicked  = 873106064189583400
+
+dbname = ('kicked.db')
+conn = sqlite3.connect(dbname, isolation_level=None)
+cursor = conn.cursor()
+sql = """CREATE TABLE IF NOT EXISTS test(name,warn,kick)"""
+cursor.execute(sql)
 
 # 接続に必要なオブジェクトを生成
 client = discord.Client()
@@ -76,7 +83,16 @@ async def swarn(member,message,guild,reason1,reason2):
     if len((member.roles)) >= 2:
         # すでにwarnされていたらkick
         for i in range(len(member.roles)):
+            # もし、前科持ちならBAN
+            if member.roles[i].id == role_kicked:
+                await member.ban(reason=reason2)
+                embed=discord.Embed(title='kick!', color=0xff0000)
+                embed.add_field(name=member.name+' 参加禁止処分受ける', value=reason1, inline=False)
+                await message.channel.send(embed=embed)
+                return
             if member.roles[i].id == role_warn:
+                sql = """INSERT INTO test VALUES(?, ?, ?)"""
+                data = ((member.id,1,0))
                 await member.kick(reason=reason2)
                 embed=discord.Embed(title='kick!', color=0xff6666)
                 embed.add_field(name=member.name+' キックされる', value=reason1, inline=False)
@@ -116,7 +132,18 @@ async def sban(message,guild,reason1,reason2):
     embed.add_field(name=member.name+' 参加禁止処分受ける', value=reason1, inline=False)
     await message.channel.send(embed=embed)
 
-
+# 誰かが入ったとき
+@client.event
+async def on_member_join(member):
+    # そいつがkickされて戻ってきていたら前科持ち付与
+    sql = """SELECT * FROM test"""
+    cursor.execute(sql)
+    for i in cursor.fetchall():
+        if i[0] == member.id:
+            guild = member.guild
+            role = guild.get_role(role_kicked)
+            await member.add_roles(role)
+    
 # メッセージ受信時に動作する処理
 @client.event
 async def on_message(message):
