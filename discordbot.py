@@ -125,10 +125,10 @@ async def skick(message,guild,reason1,reason2):
             embed.add_field(name=member.name+' 参加禁止処分受ける', value=reason1, inline=False)
             await message.channel.send(embed=embed)
             return
+    member = message.mentions[0]
     sql = """INSERT INTO test VALUES(?, ?, ?)"""
     data = ((member.id,0,1))))
     await cursor.execute(sql, data)
-    member = message.mentions[0]
     await member.kick(reason=reason2)
     embed=discord.Embed(title='kick!', color=0xff6666)
     embed.add_field(name=member.name+' キックされる', value=reason1, inline=False)
