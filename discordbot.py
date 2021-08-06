@@ -82,7 +82,7 @@ async def swarn(member,message,guild,reason1,reason2):
         return
     if len((member.roles)) >= 2:
         # すでにwarnされていたらkick
-        #for i in range(len(member.roles)):
+        for i in range(len(member.roles)):
             # もし、前科持ちならBAN
             #if member.roles[i].id == role_kicked:
                 #await member.ban(reason=reason2)
@@ -126,9 +126,9 @@ async def skick(message,guild,reason1,reason2):
             #embed.add_field(name=member.name+' 参加禁止処分受ける', value=reason1, inline=False)
             #await message.channel.send(embed=embed)
             #return
-    sql = """INSERT INTO test VALUES(?, ?, ?)"""
-    data = ((member.id,0,1))
-    await cursor.execute(sql, data)
+    #sql = """INSERT INTO test VALUES(?, ?, ?)"""
+    #data = ((member.id,0,1))
+    #await cursor.execute(sql, data)
     await member.kick(reason=reason2)
     embed=discord.Embed(title='kick!', color=0xff6666)
     embed.add_field(name=member.name+' キックされる', value=reason1, inline=False)
