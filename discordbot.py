@@ -333,10 +333,6 @@ async def on_raw_reaction_add(payload):
         member = await grantrevoke_role(payload,role_java)
     elif (payload.emoji.name == '🇧') and (payload.channel_id == 872752630248652801):
         member = await grantrevoke_role(payload,role_bedrock)
-    elif (payload.emoji.name == '🇦') and (payload.channel_id == 872752630248652801):
-        member = await grantrevoke_role(payload,role_java)
-    elif (payload.emoji.name == '🇧') and (payload.channel_id == 872752630248652801):
-        member = await grantrevoke_role(payload,role_bedrock)
     elif (payload.emoji.name == '🇨') and (payload.channel_id == 872760382610092103):
         member = await grantrevoke_role(payload,role_jed)
     elif (payload.emoji.name == '🇩') and (payload.channel_id == 872760382610092103):
