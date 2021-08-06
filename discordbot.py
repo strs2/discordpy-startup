@@ -333,18 +333,22 @@ async def on_raw_reaction_add(payload):
         member = await grantrevoke_role(payload,role_java)
     elif (payload.emoji.name == '🇧') and (payload.channel_id == 872752630248652801):
         member = await grantrevoke_role(payload,role_bedrock)
-    elif (payload.emoji.name == '🇨') and (payload.channel_id == 872760382610092103):
+    elif (payload.emoji.name == '🇨') and (payload.channel_id == 872752630248652801):
         member = await grantrevoke_role(payload,role_jed)
-    elif (payload.emoji.name == '🇩') and (payload.channel_id == 872760382610092103):
+    elif (payload.emoji.name == '🇩') and (payload.channel_id == 872752630248652801):
         member = await grantrevoke_role(payload,role_jem)
-    elif (payload.emoji.name == '🇪') and (payload.channel_id == 872760382610092103):
+    elif (payload.emoji.name == '🇪') and (payload.channel_id == 872752630248652801):
         member = await grantrevoke_role(payload,role_jec)
-    elif (payload.emoji.name == '🇫') and (payload.channel_id == 872760382610092103):
+    elif (payload.emoji.name == '🇫') and (payload.channel_id == 872752630248652801):
         member = await grantrevoke_role(payload,role_bea)
-    elif (payload.emoji.name == '🇬') and (payload.channel_id == 872760382610092103):
+    elif (payload.emoji.name == '🇬') and (payload.channel_id == 872752630248652801):
         member = await grantrevoke_role(payload,role_bem)
-    elif (payload.emoji.name == '🇭') and (payload.channel_id == 872760382610092103):
+    elif (payload.emoji.name == '🇭') and (payload.channel_id == 872752630248652801):
         member = await grantrevoke_role(payload,role_bec)
+    elif (payload.emoji.name == '🇦') and (payload.channel_id == 872760382610092103):
+        member = await grantrevoke_role(payload,role_surviv)
+    elif (payload.emoji.name == '🇧') and (payload.channel_id == 872760382610092103):
+        member = await grantrevoke_role(payload,role_creati)
     elif (payload.emoji.name == '🇨') and (payload.channel_id == 872760382610092103):
         member = await grantrevoke_role(payload,role_advent)
     elif (payload.emoji.name == '🇩') and (payload.channel_id == 872760382610092103):
