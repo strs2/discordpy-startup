@@ -39,7 +39,7 @@ dbname = ('kicked.db')
 conn = sqlite3.connect(dbname, isolation_level=None)
 cursor = conn.cursor()
 sql = """CREATE TABLE IF NOT EXISTS test(name,warn,kick)"""
-cursor.execute(sql)
+await cursor.execute(sql)
 
 # 接続に必要なオブジェクトを生成
 client = discord.Client()
@@ -93,6 +93,7 @@ async def swarn(member,message,guild,reason1,reason2):
             if member.roles[i].id == role_warn:
                 sql = """INSERT INTO test VALUES(?, ?, ?)"""
                 data = ((member.id,1,0))
+                await cursor.execute(sql, data)
                 await member.kick(reason=reason2)
                 embed=discord.Embed(title='kick!', color=0xff6666)
                 embed.add_field(name=member.name+' キックされる', value=reason1, inline=False)
@@ -116,6 +117,17 @@ async def skick(message,guild,reason1,reason2):
     if (message.author.guild_permissions.administrator) == False:
         await message.channel.send(perm_g)
         return
+    for i in range(len(member.roles)):
+        # もし、前科持ちならBAN
+        if member.roles[i].id == role_kicked:
+            await member.ban(reason=reason2)
+            embed=discord.Embed(title='kick!', color=0xff0000)
+            embed.add_field(name=member.name+' 参加禁止処分受ける', value=reason1, inline=False)
+            await message.channel.send(embed=embed)
+            return
+    sql = """INSERT INTO test VALUES(?, ?, ?)"""
+    data = ((member.id,0,1))))
+    await cursor.execute(sql, data)
     member = message.mentions[0]
     await member.kick(reason=reason2)
     embed=discord.Embed(title='kick!', color=0xff6666)
@@ -137,7 +149,7 @@ async def sban(message,guild,reason1,reason2):
 async def on_member_join(member):
     # そいつがkickされて戻ってきていたら前科持ち付与
     sql = """SELECT * FROM test"""
-    cursor.execute(sql)
+    await cursor.execute(sql)
     for i in cursor.fetchall():
         if i[0] == member.id:
             guild = member.guild
