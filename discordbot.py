@@ -351,7 +351,13 @@ async def on_message(message):
             await message.channel.send('本当にチャンネル内のログを消去しますか？消去する場合は、この文にリアクションをつけてください。')
     # 管理者以外が「@everyone」と発言したらwarnされる処理
     if message.content.startswith('@everyone'):
-        await swarn(member.author,message,message.guild,'権限者以外の everyone メンションは禁止されています。2回warnされるとkickされます。','権限者以外のeveryone メンションによりwarnされ、warn回数が2回に到達しました。')
+        await swarn(member.author,message,message.guild,'権限者以外の everyone メンションは禁止されています。2回warnされるとkickされます。','権限者以外の everyone メンションによりwarnされ、warn回数が2回に到達しました。')
+    # 管理者以外が「@メンバー」と発言したらwarnされる処理
+    if message.content.startswith('@メンバー'):
+        await swarn(member.author,message,message.guild,'権限者以外の メンバー メンションは禁止されています。2回warnされるとkickされます。','権限者以外の メンバー メンションによりwarnされ、warn回数が2回に到達しました。')
+    # 管理者以外が「@メンバー」と発言したらwarnされる処理
+    if message.content.startswith('@18歳以上'):
+        await swarn(member.author,message,message.guild,'権限者以外の 18歳以上 メンションは禁止されています。2回warnされるとkickされます。','権限者以外の 18歳以上 メンションによりwarnされ、warn回数が2回に到達しました。')
 # await member.kick(reason='管理者以外の @everyone')
 
 @client.event
